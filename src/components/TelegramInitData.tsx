@@ -60,7 +60,7 @@ const TelegramInitData: FC = () => {
       }
 
       // Check if we're in Telegram environment
-      if (typeof window !== 'undefined' && !window.Telegram) {
+      if (typeof window === 'undefined' || !window.Telegram?.WebApp) {
         setError('Telegram WebApp is not initialized. Make sure you\'re running this in Telegram.');
         setDebugInfo('Telegram object not found in window');
         return;
@@ -69,14 +69,14 @@ const TelegramInitData: FC = () => {
       setDebugInfo(prev => prev + '\nTelegram object found. Getting WebApp...');
 
       const tg = window.Telegram.WebApp;
-      
+
       if (tg) {
         setDebugInfo(prev => prev + '\nWebApp found. Getting data...');
-        
+
         // Store raw init data
         const rawInitData = tg.initData;
         setInitData(rawInitData);
-        
+
         // Log complete WebApp object in development
         if (process.env.NODE_ENV === 'development') {
           console.log('Complete WebApp object:', tg);
@@ -91,9 +91,9 @@ const TelegramInitData: FC = () => {
           themeParams: tg.themeParams,
           isExpanded: tg.isExpanded,
           viewportHeight: tg.viewportHeight,
-          viewportStableHeight: tg.viewportStableHeight
+          viewportStableHeight: tg.viewportStableHeight,
         };
-        
+
         setParsedData(data);
         setDebugInfo(prev => prev + '\nData successfully parsed');
 

@@ -8,6 +8,7 @@ import { Button, FlexBoxCol, FlexBoxRow } from "./components/styled/styled";
 import { useTonConnect } from "./hooks/useTonConnect";
 import { CHAIN } from "@tonconnect/protocol";
 import "@twa-dev/sdk";
+
 import TelegramInitData from "./components/TelegramInitData";
 
 const StyledApp = styled.div`
