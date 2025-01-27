@@ -45,7 +45,7 @@ function App() {
                 : "N/A"}
             </Button>
           </FlexBoxRow>
-          <TelegramInitData />
+          {/* <TelegramInitData /> */}
           <Counter />
           <TransferTon />
           <Jetton />
