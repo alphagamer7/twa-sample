@@ -45,7 +45,10 @@ function App() {
                 : "N/A"}
             </Button>
           </FlexBoxRow>
+          <FlexBoxRow>
+            <h1>TON SDK Example</h1>
           <TelegramInitData />
+          </FlexBoxRow>
           <Counter />
           <TransferTon />
           <Jetton />
