@@ -1,5 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { retrieveLaunchParams } from '@telegram-apps/sdk';
 
 // Styled Components
 const Container = styled.div`
@@ -47,71 +48,37 @@ const DebugInfo = styled.div`
 `;
 
 const TelegramInitData: FC = () => {
-  const [initData, setInitData] = useState<string | null>(null);
-  const [parsedData, setParsedData] = useState<any | null>(null);
+  const [initDataRaw, setInitDataRaw] = useState<string | null>(null);
+  const [initData, setInitData] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
 
   useEffect(() => {
-    // Function to initialize Telegram Web App
-    const initTelegramApp = () => {
-      try {
-        // Log in development
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Attempting to initialize Telegram Web App');
-          setDebugInfo('Starting initialization...');
-        }
-
-        // Wait for Telegram Web App to be available
-        if (!window?.Telegram?.WebApp) {
-          console.log('WebApp not found, waiting...');
-          setTimeout(initTelegramApp, 1000);
-          return;
-        }
-
-        const webapp = window.Telegram.WebApp;
-        
-        // Store raw init data
-        const rawInitData = webapp.initData;
-        setInitData(rawInitData);
-
-        // Store all available data
-        const data = {
-          initDataUnsafe: webapp.initDataUnsafe,
-          platform: webapp.platform,
-          version: webapp.version,
-          colorScheme: webapp.colorScheme,
-          themeParams: webapp.themeParams,
-          isExpanded: webapp.isExpanded,
-          viewportHeight: webapp.viewportHeight,
-          viewportStableHeight: webapp.viewportStableHeight,
-        };
-
-        setParsedData(data);
-        setDebugInfo(prev => prev + '\nData successfully parsed');
-
-        // Tell Telegram we're ready
-        webapp.ready();
-        
-        // Log success in development
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Telegram Web App initialized:', data);
-        }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-        setError(errorMessage);
-        setDebugInfo(prev => prev + '\nError: ' + errorMessage);
-        console.error('Error:', err);
+    try {
+      // Log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Attempting to retrieve Telegram launch parameters');
+        setDebugInfo('Starting initialization...');
       }
-    };
 
-    // Start initialization
-    initTelegramApp();
+      // Retrieve launch parameters
+      const { initDataRaw, initData } = retrieveLaunchParams();
 
-    // Cleanup
-    return () => {
-      // Any cleanup if needed
-    };
+      // Store raw init data
+      setInitDataRaw(initDataRaw as string);
+      setInitData(initData);
+
+      // Log success in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Telegram launch parameters retrieved:', { initDataRaw, initData });
+        setDebugInfo('Data successfully retrieved');
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      setError(errorMessage);
+      setDebugInfo(prev => prev + '\nError: ' + errorMessage);
+      console.error('Error:', err);
+    }
   }, []);
 
   return (
@@ -124,10 +91,13 @@ const TelegramInitData: FC = () => {
             <pre>{debugInfo}</pre>
           </DebugInfo>
         </>
-      ) : parsedData ? (
+      ) : initData ? (
         <>
           <DataContainer>
-            {JSON.stringify(parsedData, null, 2)}
+            <h3>Raw Init Data:</h3>
+            <pre>{initDataRaw}</pre>
+            <h3>Parsed Init Data:</h3>
+            <pre>{JSON.stringify(initData, null, 2)}</pre>
           </DataContainer>
           <DebugInfo>
             <pre>{debugInfo}</pre>
