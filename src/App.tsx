@@ -9,7 +9,7 @@ import { useTonConnect } from "./hooks/useTonConnect";
 import { CHAIN } from "@tonconnect/protocol";
 import "@twa-dev/sdk";
 
-import TelegramInitData from "./components/TelegramInitData";
+// import TelegramInitData from "./components/TelegramInitData";
 
 const StyledApp = styled.div`
   background-color: #e8e8e8;
