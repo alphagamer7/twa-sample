@@ -8,6 +8,7 @@ import { Button, FlexBoxCol, FlexBoxRow } from "./components/styled/styled";
 import { useTonConnect } from "./hooks/useTonConnect";
 import { CHAIN } from "@tonconnect/protocol";
 import "@twa-dev/sdk";
+import TelegramInitData from "./components/TelegramInitData";
 
 const StyledApp = styled.div`
   background-color: #e8e8e8;
@@ -43,6 +44,7 @@ function App() {
                 : "N/A"}
             </Button>
           </FlexBoxRow>
+          <TelegramInitData />
           <Counter />
           <TransferTon />
           <Jetton />
