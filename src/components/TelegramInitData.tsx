@@ -63,6 +63,8 @@ const TelegramInitData: FC = () => {
 
       // Retrieve launch parameters
       const { initDataRaw, initData } = retrieveLaunchParams();
+      console.log('initDataRaw:', initDataRaw);
+      console.log('initData:', initData);
 
       // Store raw init data
       setInitDataRaw(initDataRaw as string);
