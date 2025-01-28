@@ -1,120 +1,137 @@
-import { FC, useEffect, useState } from 'react';
-import styled from 'styled-components';
-import { retrieveLaunchParams, init } from '@telegram-apps/sdk';
+import React, { useEffect, useState } from 'react';
 
-// Styled Components
-const Container = styled.div`
-  background-color: #2d2d2d;
-  border-radius: 12px;
-  padding: 20px;
-  margin: 10px 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  color: #ffffff;
-`;
+// Define the TelegramWebApp and TelegramInitData interfaces
+interface TelegramWebApp {
+  initData: string;
+  initDataUnsafe?: {
+    query_id?: string;
+    user?: {
+      id: number;
+      first_name: string;
+      last_name?: string;
+      username?: string;
+      language_code?: string;
+    };
+    auth_date: number;
+    hash: string;
+  };
+  platform?: string;
+  version?: string;
+  colorScheme?: 'light' | 'dark';
+  themeParams?: {
+    bg_color?: string;
+    text_color?: string;
+    hint_color?: string;
+    link_color?: string;
+    button_color?: string;
+    button_text_color?: string;
+  };
+  isExpanded?: boolean;
+  viewportHeight?: number;
+  viewportStableHeight?: number;
+}
 
-const Title = styled.h2`
-  margin: 0 0 16px 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #ffffff;
-`;
+export interface TelegramInitData {
+  query_id?: string;
+  user?: {
+    id: number;
+    first_name: string;
+    last_name?: string;
+    username?: string;
+    language_code?: string;
+  };
+  auth_date?: number;
+  hash?: string;
+  start_param?: string;
+}
 
-const DataContainer = styled.div`
-  background-color: #1a1a1a;
-  border-radius: 8px;
-  padding: 16px;
-  font-family: monospace;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: #e0e0e0;
-`;
+// // Declare the global Telegram object
+// declare global {
+//   interface Window {
+//     Telegram?: {
+//       WebApp: TelegramWebApp;
+//     };
+//   }
+// }
 
-const NoDataText = styled.p`
-  color: #888888;
-  font-style: italic;
-`;
-
-const ErrorText = styled.p`
-  color: #ff6b6b;
-  font-style: italic;
-`;
-
-const DebugInfo = styled.div`
-  margin-top: 16px;
-  padding: 12px;
-  background-color: #333;
-  border-radius: 8px;
-  font-size: 0.9rem;
-`;
-
-const TelegramInitData: FC = () => {
-  init();
+const TelegramInitData: React.FC = () => {
   const [initDataRaw, setInitDataRaw] = useState<string | null>(null);
-  const [initData, setInitData] = useState<any | null>(null);
+  const [initData, setInitData] = useState<TelegramInitData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('');
 
   useEffect(() => {
-    try {
-      // Log in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Attempting to retrieve Telegram launch parameters');
-        setDebugInfo('Starting initialization...');
+    const initializeTelegram = async (): Promise<void> => {
+      try {
+        // Log in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Attempting to retrieve Telegram launch parameters');
+          setDebugInfo('Starting initialization...');
+        }
+
+        // Check if window.Telegram is available
+        const webApp = window.Telegram?.WebApp;
+        if (webApp) {
+          const webAppData = webApp.initData;
+          setInitDataRaw(webAppData);
+
+          // Try to parse the init data if it exists
+          if (webAppData) {
+            try {
+              const parsed = JSON.parse(webAppData) as TelegramInitData;
+              setInitData(parsed);
+              setDebugInfo((prev: string) => prev + '\nData successfully parsed');
+            } catch (parseErr) {
+              setInitData(null); // Store as null if parsing fails
+              setDebugInfo((prev: string) => prev + '\nError parsing data: ' + String(parseErr));
+            }
+          }
+        } else {
+          throw new Error('Telegram WebApp is not available');
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+        setError(errorMessage);
+        setDebugInfo((prev: string) => prev + '\nError: ' + errorMessage);
+        console.error('Error:', err);
       }
+    };
 
-      // Retrieve launch parameters
-      const { initDataRaw, initData } = retrieveLaunchParams();
-      console.log('initDataRaw:', initDataRaw);
-      console.log('initData:', initData);
-
-      // Store raw init data
-      setInitDataRaw(initDataRaw as string);
-      setInitData(initData);
-
-      // Log success in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Telegram launch parameters retrieved:', { initDataRaw, initData });
-        setDebugInfo('Data successfully retrieved');
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-      setError(errorMessage);
-      setDebugInfo(prev => prev + '\nError: ' + errorMessage);
-      console.error('Error:', err);
-    }
+    void initializeTelegram();
   }, []);
 
   return (
-    <Container>
-      <Title>Telegram Init Data</Title>
+    <div className="bg-gray-800 rounded-xl p-5 m-2 shadow-lg text-white">
+      <h2 className="text-2xl font-semibold mb-4">Telegram Init Data</h2>
+
       {error ? (
         <>
-          <ErrorText>{error}</ErrorText>
-          <DebugInfo>
+          <p className="text-red-400 italic">{error}</p>
+          <div className="mt-4 p-3 bg-gray-900 rounded-lg text-sm">
             <pre>{debugInfo}</pre>
-          </DebugInfo>
+          </div>
         </>
       ) : initData ? (
         <>
-          <DataContainer>
-            <h3>Raw Init Data:</h3>
-            <pre>{initDataRaw}</pre>
-            <h3>Parsed Init Data:</h3>
-            <pre>{JSON.stringify(initData, null, 2)}</pre>
-          </DataContainer>
-          <DebugInfo>
+          <div className="bg-gray-900 rounded-lg p-4 font-mono break-words text-gray-200">
+            <h3 className="text-lg mb-2">Raw Init Data:</h3>
+            <pre className="overflow-x-auto">{initDataRaw}</pre>
+            <h3 className="text-lg mt-4 mb-2">Parsed Init Data:</h3>
+            <pre className="overflow-x-auto">{JSON.stringify(initData, null, 2)}</pre>
+          </div>
+          <div className="mt-4 p-3 bg-gray-900 rounded-lg text-sm">
             <pre>{debugInfo}</pre>
-          </DebugInfo>
+          </div>
         </>
       ) : (
         <>
-          <NoDataText>Loading Telegram data...</NoDataText>
-          <DebugInfo>
+          <p className="text-gray-400 italic">Loading Telegram data...</p>
+          <div className="mt-4 p-3 bg-gray-900 rounded-lg text-sm">
             <pre>{debugInfo}</pre>
-          </DebugInfo>
+          </div>
         </>
       )}
-    </Container>
+    </div>
   );
 };
 
