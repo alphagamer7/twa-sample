@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { retrieveLaunchParams } from '@telegram-apps/sdk';
+import { retrieveLaunchParams, init } from '@telegram-apps/sdk';
 
 // Styled Components
 const Container = styled.div`
@@ -48,6 +48,7 @@ const DebugInfo = styled.div`
 `;
 
 const TelegramInitData: FC = () => {
+  init();
   const [initDataRaw, setInitDataRaw] = useState<string | null>(null);
   const [initData, setInitData] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
